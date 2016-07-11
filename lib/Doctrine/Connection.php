@@ -1433,7 +1433,8 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
      * @param Closure $listener
      */
     public function runAfterCommit(Closure $listener) {
-        $this->commitListeners[$this->currentLevel][]  = $listener;
+        // Run closure after root transaction
+        $this->commitListeners[1][]  = $listener;
     }
 
     /**
@@ -1453,11 +1454,8 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
     public function rollback($savepoint = null)
     {
         // Clear callbacks
-        $res = $this->transaction->rollback($savepoint);
         $this->commitListeners[$this->currentLevel] = [];
-        $this->currentLevel--;
-
-        return $res;
+        return $this->transaction->rollback($savepoint);
     }
 
     /**
