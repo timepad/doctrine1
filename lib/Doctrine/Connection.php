@@ -191,11 +191,11 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
     protected $commitListeners  = [];
 
     /**
-     * Список коллбеков в которые будут выполнены после завершения главной транзакции
+     * Текущий уровень вложенности транзакции
      *
-     * @var array
+     * @var int
      */
-    protected $commitMainListeners  = [];
+    protected $currentLevel    = 0;
 
     /**
      * the constructor
@@ -1383,11 +1383,13 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
      */
     public function beginTransaction($savepoint = null)
     {
+        $this->currentLevel++;
         return $this->transaction->beginTransaction($savepoint);
     }
 
     public function beginInternalTransaction($savepoint = null)
     {
+        $this->currentLevel++;
         return $this->transaction->beginInternalTransaction($savepoint);
     }
 
@@ -1408,25 +1410,19 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
     {
         $res = $this->transaction->commit($savepoint);
 
-        // Run callbacks after commit end
-        foreach ($this->commitListeners as $index => $listener) {
-            /* @var $listener Closure */
-            $event = new Doctrine_Event($this, Doctrine_Event::LISTENER_COMMIT);
-            $listener($event);
-        }
-        $this->commitListeners  = [];
-
-        if ($this->getTransactionLevel() == 0) {
+        if (isset($this->commitListeners[$this->currentLevel]) && !empty($this->commitListeners[$this->currentLevel])) {
             // Run callbacks after main commit end
-            foreach ($this->commitMainListeners as $index => $listener) {
+            foreach ($this->commitListeners[$this->currentLevel] as $index => $listener) {
                 /* @var $listener Closure */
                 $event = new Doctrine_Event($this, Doctrine_Event::LISTENER_COMMIT);
                 $listener($event);
             }
 
-            $this->commitMainListeners  = [];
+            // Clean closure after commit functions
+            unset($this->commitListeners[$this->currentLevel]);
         }
 
+        $this->currentLevel--;
 
         return $res;
     }
@@ -1435,14 +1431,9 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
      * Run $listener after current transaction is done
      *
      * @param Closure $listener
-     * @param bool $mainTransaction run only after main transaction
      */
-    public function runAfterCommit(Closure $listener, $mainTransaction = false) {
-        if ($mainTransaction) {
-            $this->commitMainListeners[]    = $listener;
-        } else {
-            $this->commitListeners[]        = $listener;
-        }
+    public function runAfterCommit(Closure $listener) {
+        $this->commitListeners[$this->currentLevel][]  = $listener;
     }
 
     /**
@@ -1462,9 +1453,11 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
     public function rollback($savepoint = null)
     {
         // Clear callbacks
-        $this->commitMainListeners = [];
-        $this->commitListeners = [];
-        return $this->transaction->rollback($savepoint);
+        $res = $this->transaction->rollback($savepoint);
+        $this->commitListeners[$this->currentLevel] = [];
+        $this->currentLevel--;
+
+        return $res;
     }
 
     /**
