@@ -1455,6 +1455,8 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
     {
         // Clear callbacks
         $this->commitListeners[$this->currentLevel] = [];
+
+        $this->currentLevel--;
         return $this->transaction->rollback($savepoint);
     }
 
