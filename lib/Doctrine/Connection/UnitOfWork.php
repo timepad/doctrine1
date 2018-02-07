@@ -531,7 +531,15 @@ class Doctrine_Connection_UnitOfWork extends Doctrine_Connection_Module
                     //--
                 } else {
                     $array = $record->getPrepared();
-                    $this->conn->update($table, $array, $identifier);
+
+                    $updateByAdd = [];
+                    foreach ($table->getOption('updateBy') as $ub_k) {
+                        if ($ub_v = $record->get($ub_k, false)) {
+                            $updateByAdd[$ub_k] = $ub_v;
+                        }
+                    }
+
+                    $this->conn->update($table, $array, $identifier, $updateByAdd);
                 }
                 $record->assignIdentifier(true);
             }

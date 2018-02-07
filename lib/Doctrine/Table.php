@@ -178,7 +178,8 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                                      'queryParts'     => array(),
                                      'versioning'     => null,
                                      'subclasses'     => array(),
-                                     'orderBy'        => null
+                                     'orderBy'        => null,
+                                     "updateBy"       => array(),
                                      );
 
     /**

@@ -641,7 +641,7 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
      *                                  Values can be strings or Doctrine_Expression instances.
      * @return integer                  the number of affected rows. Boolean false if empty value array was given,
      */
-    public function update(Doctrine_Table $table, array $fields, array $identifier)
+    public function update(Doctrine_Table $table, array $fields, array $identifier, array $additionalIndentifiers = [])
     {
         if (empty($fields)) {
             return false;
@@ -655,6 +655,13 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
             } else {
                 $set[] = $this->quoteIdentifier($table->getColumnName($fieldName)) . ' = ?';
             }
+        }
+
+        $identifier_columns = $table->getIdentifierColumnNames();
+
+        foreach ($additionalIndentifiers as $ai_k => $ai_v) {
+            $identifier_columns[] = $ai_k;
+            $identifier[$ai_k] = $ai_v;
         }
 
         $params = array_merge(array_values($fields), array_values($identifier));
