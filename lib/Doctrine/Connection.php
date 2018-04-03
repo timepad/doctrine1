@@ -437,6 +437,17 @@ abstract class Doctrine_Connection extends Doctrine_Configurable implements Coun
     }
 
     /**
+     * PHP-7 bfx
+     *
+     * @param $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        return isset($this->properties[$name]) || isset($this->modules[$name]);
+    }
+
+    /**
      * returns the manager that created this connection
      *
      * @return Doctrine_Manager
