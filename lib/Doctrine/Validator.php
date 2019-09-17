@@ -96,6 +96,8 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
             return true;
         } else if ($type == 'array' || $type == 'object') {
             $length = strlen(serialize($value));
+        } else if ($type == 'json') {
+            $length = strlen(json_encode($value));
         } else if ($type == 'decimal' || $type == 'float') {
             $value = abs($value);
 
@@ -179,6 +181,9 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
                  return is_array($var);
              case 'object':
                  return is_object($var);
+             case 'json':
+                 $json = json_decode($var);
+                 return json_last_error() === JSON_ERROR_NONE && $json !== null;
              case 'boolean':
                  return is_bool($var) || (is_numeric($var) && ($var == 0 || $var == 1));
              case 'timestamp':

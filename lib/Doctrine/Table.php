@@ -1350,6 +1350,7 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                 case 'integer':
                 case 'array':
                 case 'object':
+                case 'json':
                 case 'blob':
                 case 'gzip':
                     //$length = 2147483647;
@@ -2348,7 +2349,18 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                         }
                         return $value;
                     }
-                break;
+                    break;
+                case 'json':
+                    if (is_string($value)) {
+                        $value = empty($value) ? null : json_decode($value, true);
+
+                        if (json_last_error() !== JSON_ERROR_NONE || $value === null) {
+                            throw new Doctrine_Table_Exception('json decode of ' . $fieldName . ' failed.');
+                        }
+
+                        return $value;
+                    }
+                    break;
                 case 'gzip':
                     $value = gzuncompress($value);
 
