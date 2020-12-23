@@ -52,7 +52,17 @@ class Doctrine_Task_Migrate extends Doctrine_Task
                 $this->notify($output);
             }
         } else {
-            $version = Doctrine_Core::migrate($this->getArgument('migrations_path'), $this->getArgument('timestamp'));
+            try {
+                $version = Doctrine_Core::migrate($this->getArgument('migrations_path'), $this->getArgument('timestamp'));
+            } catch (Doctrine_migration_Exception $dme) {
+                if (strpos($dme->getMessage(), 'No new migrations to run')) {
+                    $this->notify('No new migrations to run');
+
+                    return;
+                } else {
+                    throw $dme;
+                }
+            }
         
             $this->notify('migrated successfully');
         }
