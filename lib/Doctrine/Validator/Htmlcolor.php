@@ -20,7 +20,7 @@
  */
 
 /**
- * Doctrine_Validator_HtmlColor
+ * Doctrine_Validator_Htmlcolor
  *
  * @package     Doctrine
  * @subpackage  Validator
@@ -30,7 +30,7 @@
  * @version     $Revision: 7490 $
  * @author      Konsta Vesterinen <kvesteri@cc.hut.fi>
  */
-class Doctrine_Validator_HtmlColor extends Doctrine_Validator_Driver
+class Doctrine_Validator_Htmlcolor extends Doctrine_Validator_Driver
 {
     /**
      * checks if given value is a valid html color code
