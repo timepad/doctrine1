@@ -68,6 +68,7 @@ class Doctrine_DataDict_Sqlite extends Doctrine_DataDict
             case 'string':
             case 'char':
             case 'gzip':
+            case 'tpstore':
             case 'varchar':
                 $length = (isset($field['length']) && $field['length']) ? $field['length'] : null;
 

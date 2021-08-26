@@ -205,6 +205,11 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
     private $_oid;
 
     /**
+     * @var array{fieldName: string, type: string} fieldName
+     */
+    private $tpStoreOriginalTypes = [];
+
+    /**
      * constructor
      * @param Doctrine_Table|null $table       a Doctrine_Table object or null,
      *                                         if null the table object is retrieved from current connection
@@ -835,6 +840,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                     case 'array':
                     case 'object':
                     case 'json':
+                    case 'tpstore':
                         $vars['_data'][$k] = serialize($vars['_data'][$k]);
                         break;
                     case 'gzip':
@@ -885,6 +891,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                 case 'array':
                 case 'object':
                 case 'json':
+                case 'tpstore':
                     $this->_data[$k] = unserialize($this->_data[$k]);
                     break;
                 case 'gzip':
@@ -1832,7 +1839,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
         $a = array();
 
         if (empty($array)) {
-            $modifiedFields = $this->_modified;
+            $modifiedFields = array_unique($this->_modified);
         }
 
         foreach ($modifiedFields as $field) {
@@ -1850,6 +1857,20 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                     break;
                 case 'json':
                     $a[$field] = json_encode($this->_data[$field]);
+                    break;
+                case 'tpstore':
+                    if (array_key_exists($field, $this->tpStoreOriginalTypes)) {
+                        if ($this->tpStoreOriginalTypes[$field] === Doctrine_TpStore::TYPE_JSON) {
+                            $a[$field] = json_encode($this->_data[$field]);
+                        } elseif ($this->tpStoreOriginalTypes[$field] === Doctrine_TpStore::TYPE_SERIALIZED) {
+                            $a[$field] = serialize($this->_data[$field]);
+                        } else {
+                            throw new Doctrine_Exception("Original type {$this->tpStoreOriginalTypes[$field]} for tpstore for field $field is not allowed");
+                        }
+                    } else {
+                        /** При создании новой записи будет сериализоваться. TODO При переезде на json заменить на json_encode */
+                        $a[$field] = serialize($this->_data[$field]);
+                    }
                     break;
                 case 'gzip':
                     $a[$field] = gzcompress($this->_data[$field],5);
@@ -2958,5 +2979,12 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
      */
     public function getClass() {
         return get_class($this);
+    }
+
+    /**
+     * @param array $original_types
+     */
+    public function setTpStoreOriginalTypes(array $original_types): void {
+        $this->tpStoreOriginalTypes = $original_types;
     }
 }

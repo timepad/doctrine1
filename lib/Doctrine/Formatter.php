@@ -181,6 +181,10 @@ class Doctrine_Formatter extends Doctrine_Connection_Module
                 return $input;
             case 'array':
             case 'object':
+            case 'tpstore':
+                /** Нельзя определить какой был предыдущий тип, чтобы квотировать по нему, поэтому будем сериализовать.
+                 * TODO При переезде на json перенести в case json
+                 */
                 return "'" . str_replace("'", "''", serialize($input)) . "'";
             case 'json':
                 return "'" . str_replace("'", "''", json_encode($input)) . "'";
