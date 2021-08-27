@@ -1,9 +1,9 @@
 <?php
 
 /**
- * TpStore
+ * Doctrine_TpStore
  * 
- * Class for custom column type tpstore
+ * Class for custom column type tpstore. Combine json type and serializiable array type
  *
  * @package     Doctrine
  * @subpackage  TpStore
@@ -15,5 +15,5 @@ class Doctrine_TpStore {
     public const TYPE_JSON = 'json';
 
     /** @var string  */
-    public const TYPE_SERIALIZED = 'serialized';
+    public const TYPE_SERIALIZED = 'array';
 }

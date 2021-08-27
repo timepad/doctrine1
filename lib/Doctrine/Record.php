@@ -1845,6 +1845,10 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
         foreach ($modifiedFields as $field) {
             $type = $this->_table->getTypeOf($field);
 
+            if ($type === 'tpstore') {
+                $type = $this->getBaseTypeFromTpStoreOriginalTypesByFieldname($field);
+            }
+
             if ($this->_data[$field] === self::$_null) {
                 $a[$field] = null;
                 continue;
@@ -1857,20 +1861,6 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                     break;
                 case 'json':
                     $a[$field] = json_encode($this->_data[$field]);
-                    break;
-                case 'tpstore':
-                    if (array_key_exists($field, $this->tpStoreOriginalTypes)) {
-                        if ($this->tpStoreOriginalTypes[$field] === Doctrine_TpStore::TYPE_JSON) {
-                            $a[$field] = json_encode($this->_data[$field]);
-                        } elseif ($this->tpStoreOriginalTypes[$field] === Doctrine_TpStore::TYPE_SERIALIZED) {
-                            $a[$field] = serialize($this->_data[$field]);
-                        } else {
-                            throw new Doctrine_Exception("Original type {$this->tpStoreOriginalTypes[$field]} for tpstore for field $field is not allowed");
-                        }
-                    } else {
-                        /** При создании новой записи будет сериализоваться. TODO При переезде на json заменить на json_encode */
-                        $a[$field] = serialize($this->_data[$field]);
-                    }
                     break;
                 case 'gzip':
                     $a[$field] = gzcompress($this->_data[$field],5);
@@ -2986,5 +2976,14 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
      */
     public function setTpStoreOriginalTypes(array $original_types): void {
         $this->tpStoreOriginalTypes = $original_types;
+    }
+
+    /**
+     * @param string $fieldname
+     * @return string
+     */
+    public function getBaseTypeFromTpStoreOriginalTypesByFieldname(string $fieldname): string {
+        /** TODO При переезде на json сделать при отрицании @see Doctrine_TpStore::TYPE_JSON */
+        return array_key_exists($fieldname, $this->tpStoreOriginalTypes) ? $this->tpStoreOriginalTypes[$fieldname] : Doctrine_TpStore::TYPE_SERIALIZED;
     }
 }

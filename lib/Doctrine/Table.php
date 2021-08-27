@@ -2091,6 +2091,10 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
             }
         }
 
+        if ($dataType === 'tpstore') {
+            $dataType = $record->getBaseTypeFromTpStoreOriginalTypesByFieldname($fieldName);
+        }
+
         // Validate field length, if length validation is enabled
         if ($this->getAttribute(Doctrine_Core::ATTR_VALIDATE) & Doctrine_Core::VALIDATE_LENGTHS) {
             if ( ! Doctrine_Validator::validateLength($value, $dataType, $this->getFieldLength($fieldName))) {
@@ -2382,7 +2386,7 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                             $decoded = json_decode($value, true);
 
                             if (json_last_error() !== JSON_ERROR_NONE) {
-                                throw new Doctrine_Table_Exception('Unserialization and json decode of ' . $fieldName . ' failed.');
+                                throw new Doctrine_Table_Exception('Unserialization and json_decode of ' . $fieldName . ' failed.');
                             }
 
                             $this->currentTpStoreOriginalTypes[$fieldName] = Doctrine_TpStore::TYPE_JSON;
