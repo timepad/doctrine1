@@ -2380,7 +2380,7 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                     return $value;
                 case 'tpstore':
                     if (is_string($value)) {
-                        $unserialized = empty($value) ? null : unserialize($value);
+                        $unserialized = empty($value) ? null : @unserialize($value);
 
                         if ($unserialized === false) {
                             $decoded = json_decode($value, true);
