@@ -71,6 +71,7 @@ class Doctrine_DataDict_Mssql extends Doctrine_DataDict
             case 'varchar':
             case 'string':
             case 'gzip':
+            case 'tpstore':
                 $length = !empty($field['length'])
                     ? $field['length'] : false;
 

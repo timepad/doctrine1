@@ -193,6 +193,7 @@ class Doctrine_DataDict_Mysql extends Doctrine_DataDict
                 }
                 return 'LONGTEXT';
             case 'json':
+            case 'tpstore':
                 return 'JSON';
             case 'blob':
                 if ( ! empty($field['length'])) {

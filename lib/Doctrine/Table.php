@@ -228,6 +228,11 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
     protected $record;
 
     /**
+     * @var array{fieldName: string, type: string} fieldName
+     */
+    private $currentTpStoreOriginalTypes = [];
+
+    /**
      * the constructor
      *
      * @throws Doctrine_Connection_Exception    if there are no opened connections
@@ -1353,6 +1358,7 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                 case 'json':
                 case 'blob':
                 case 'gzip':
+                case 'tpstore':
                     //$length = 2147483647;
 
                     //All the DataDict driver classes have work-arounds to deal
@@ -2085,6 +2091,10 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
             }
         }
 
+        if ($dataType === 'tpstore') {
+            $dataType = $record->getBaseTypeFromTpStoreOriginalTypesByFieldname($fieldName);
+        }
+
         // Validate field length, if length validation is enabled
         if ($this->getAttribute(Doctrine_Core::ATTR_VALIDATE) & Doctrine_Core::VALIDATE_LENGTHS) {
             if ( ! Doctrine_Validator::validateLength($value, $dataType, $this->getFieldLength($fieldName))) {
@@ -2368,7 +2378,27 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                         throw new Doctrine_Table_Exception('Uncompressing of ' . $fieldName . ' failed.');
                     }
                     return $value;
-                break;
+                case 'tpstore':
+                    if (is_string($value)) {
+                        $unserialized = empty($value) ? null : @unserialize($value);
+
+                        if ($unserialized === false) {
+                            $decoded = json_decode($value, true);
+
+                            if (json_last_error() !== JSON_ERROR_NONE) {
+                                throw new Doctrine_Table_Exception('Unserialization and json_decode of ' . $fieldName . ' failed.');
+                            }
+
+                            $this->currentTpStoreOriginalTypes[$fieldName] = Doctrine_TpStore::TYPE_JSON;
+
+                            return $decoded;
+                        }
+
+                        $this->currentTpStoreOriginalTypes[$fieldName] = Doctrine_TpStore::TYPE_SERIALIZED;
+
+                        return $unserialized;
+                    }
+                    break;
             }
         }
         return $value;
@@ -2721,6 +2751,17 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
     public function __toString()
     {
         return Doctrine_Lib::getTableAsString($this);
+    }
+
+    /**
+     * @return array
+     */
+    public function getCurrentTpStoreOriginalTypes(): array {
+        return $this->currentTpStoreOriginalTypes;
+    }
+
+    public function clearCurrentTpStoreOriginalTypes(): void {
+        $this->currentTpStoreOriginalTypes = [];
     }
 
     /**

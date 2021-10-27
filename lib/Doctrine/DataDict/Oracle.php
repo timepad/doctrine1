@@ -66,6 +66,7 @@ class Doctrine_DataDict_Oracle extends Doctrine_DataDict
             case 'gzip':
             case 'char':
             case 'varchar':
+            case 'tpstore':
                 $length = !empty($field['length']) ? $field['length'] : false;
 
                 $fixed  = ((isset($field['fixed']) && $field['fixed']) || $field['type'] == 'char') ? true : false;

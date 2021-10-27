@@ -71,8 +71,12 @@ class Doctrine_Hydrator_RecordDriver extends Doctrine_Hydrator_Graph
     {
         $component = $this->_getClassNameToReturn($data, $component);
 
-        $this->_tables[$component]->setData($data);
-        $record = $this->_tables[$component]->getRecord();
+        $table = $this->_tables[$component];
+
+        $table->setData($data);
+        $record = $table->getRecord();
+        $record->setTpStoreOriginalTypes($table->getCurrentTpStoreOriginalTypes());
+        $table->clearCurrentTpStoreOriginalTypes();
 
         return $record;
     }

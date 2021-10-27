@@ -178,6 +178,7 @@ class Doctrine_Validator extends Doctrine_Locator_Injectable
              case 'gzip':
                  return is_string($var);
              case 'array':
+             case 'tpstore':
                  return is_array($var);
              case 'object':
                  return is_object($var);

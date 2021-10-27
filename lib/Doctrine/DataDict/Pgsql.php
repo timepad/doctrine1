@@ -390,6 +390,7 @@ class Doctrine_DataDict_Pgsql extends Doctrine_DataDict
             case 'blob':
                 return 'BYTEA';
             case 'json':
+            case 'tpstore':
                 return 'JSON';
             case 'integer':
             case 'int':

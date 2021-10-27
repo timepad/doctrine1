@@ -157,6 +157,7 @@ $test->addTestCase($relation);
 $data_types = new GroupTest('Data Types Tests', 'data_types');
 $data_types->addTestCase(new Doctrine_DataType_Enum_TestCase());
 $data_types->addTestCase(new Doctrine_DataType_Boolean_TestCase());
+$data_types->addTestCase(new Doctrine_DataType_TpStore_TestCase());
 $test->addTestCase($data_types);
 
 // Behaviors Testing

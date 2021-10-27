@@ -205,6 +205,11 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
     private $_oid;
 
     /**
+     * @var array{fieldName: string, type: string} fieldName
+     */
+    private $tpStoreOriginalTypes = [];
+
+    /**
      * constructor
      * @param Doctrine_Table|null $table       a Doctrine_Table object or null,
      *                                         if null the table object is retrieved from current connection
@@ -835,6 +840,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                     case 'array':
                     case 'object':
                     case 'json':
+                    case 'tpstore':
                         $vars['_data'][$k] = serialize($vars['_data'][$k]);
                         break;
                     case 'gzip':
@@ -885,6 +891,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                 case 'array':
                 case 'object':
                 case 'json':
+                case 'tpstore':
                     $this->_data[$k] = unserialize($this->_data[$k]);
                     break;
                 case 'gzip':
@@ -1832,11 +1839,15 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
         $a = array();
 
         if (empty($array)) {
-            $modifiedFields = $this->_modified;
+            $modifiedFields = array_unique($this->_modified);
         }
 
         foreach ($modifiedFields as $field) {
             $type = $this->_table->getTypeOf($field);
+
+            if ($type === 'tpstore') {
+                $type = $this->getBaseTypeFromTpStoreOriginalTypesByFieldname($field);
+            }
 
             if ($this->_data[$field] === self::$_null) {
                 $a[$field] = null;
@@ -2958,5 +2969,21 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
      */
     public function getClass() {
         return get_class($this);
+    }
+
+    /**
+     * @param array $original_types
+     */
+    public function setTpStoreOriginalTypes(array $original_types): void {
+        $this->tpStoreOriginalTypes = $original_types;
+    }
+
+    /**
+     * @param string $fieldname
+     * @return string
+     */
+    public function getBaseTypeFromTpStoreOriginalTypesByFieldname(string $fieldname): string {
+        /** TODO При переезде на json сделать при отрицании @see Doctrine_TpStore::TYPE_JSON */
+        return array_key_exists($fieldname, $this->tpStoreOriginalTypes) ? $this->tpStoreOriginalTypes[$fieldname] : Doctrine_TpStore::TYPE_SERIALIZED;
     }
 }
