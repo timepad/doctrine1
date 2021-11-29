@@ -424,4 +424,34 @@ abstract class Doctrine_Configurable extends Doctrine_Locator_Injectable
     {
         return $this->parent;
     }
+
+    /**
+     * setEventDispatcher
+     *
+     * @param Doctrine_EventDispatcher_DispatcherInterface $dispatcher
+     * @throws Doctrine_Exception
+     */
+    public function setEventDispatcher(Doctrine_EventDispatcher_DispatcherInterface $dispatcher)
+    {
+        $this->setAttribute(Doctrine_Core::ATTR_EVENT_DISPATCHER, $dispatcher);
+    }
+
+    /**
+     * getEventDispatcher
+     *
+     * @return Doctrine_EventDispatcher_DispatcherInterface
+     * @throws Doctrine_Exception
+     */
+    public function getEventDispatcher(): Doctrine_EventDispatcher_DispatcherInterface
+    {
+        if (isset($this->attributes[Doctrine_Core::ATTR_EVENT_DISPATCHER])) {
+            return $this->attributes[Doctrine_Core::ATTR_EVENT_DISPATCHER];
+        }
+
+        if (isset($this->parent)) {
+            return $this->parent->getEventDispatcher();
+        }
+
+        throw new Doctrine_Exception('Event dispatcher not found');
+    }
 }

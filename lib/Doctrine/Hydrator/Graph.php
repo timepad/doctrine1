@@ -19,6 +19,8 @@
  * <http://www.doctrine-project.org>.
  */
 
+use Doctrine_EventDispatcher_Event_UnserializationFieldFailed as UnserializationFieldFailed;
+
 /**
  * Abstract base class for child drivers to hydrate the object graph in to
  * various data types. For example Doctrine_Record instances or PHP arrays
@@ -334,7 +336,25 @@ abstract class Doctrine_Hydrator_Graph extends Doctrine_Hydrator_Abstract
             if ($cache[$key]['isSimpleType']) {
                 $preparedValue = $value;
             } else {
-                $preparedValue = $table->prepareValue($fieldName, $value, $cache[$key]['type']);
+                /** @var Doctrine_Table $table */
+                try {
+                    $preparedValue = $table->prepareValue($fieldName, $value, $cache[$key]['type']);
+                } catch (Doctrine_Table_Exception $e) {
+                    if (false === strpos($e->getMessage(), 'Unserialization')) {
+                        throw $e;
+                    }
+
+                    $event = new UnserializationFieldFailed(
+                        $table,
+                        $fieldName,
+                        $value,
+                        $data
+                    );
+                    $table->getEventDispatcher()->dispatch($event);
+
+                    // оставляем null
+                    $preparedValue = null;
+                }
             }
 
             // Ticket #1380

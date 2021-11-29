@@ -100,7 +100,69 @@ class Doctrine_Record_SerializeUnserialize_TestCase extends Doctrine_UnitTestCas
         
         $this->assertIdentical(get_class($object_after->objecttest), 'TestRecord');
     }
-    
+
+    public function testUnserializeField()
+    {
+        $model = new SerializeTest();
+        $table = $model->getTable();
+        $cascadeValue = [
+            'string' => 'просто строка',
+            'array'  => [
+                'sub_1' => false,
+                'sub_2' => 'вложенная строка',
+                'sub_3' => 123,
+            ]
+        ];
+
+        /**
+         * 1. Простой тест десериализации
+         */
+        $serializedCascade = serialize($cascadeValue);
+        $preparedValue = $table->prepareValue('arraytest', $serializedCascade);
+        $this->assertEqual($cascadeValue, $preparedValue);
+
+        /**
+         * 2. Извне меняем строку в уже сериализованном блобе
+         */
+        $serializedCascade = serialize($cascadeValue);
+        $corruptedCascade = str_replace('просто строка', 'простая и длинная строка', $serializedCascade);
+        $corruptedCascade = str_replace('вложенная строка', 'вложенная и длинная строка', $corruptedCascade);
+        $preparedValue = $table->prepareValue('arraytest', $corruptedCascade);
+
+        // на выходе должно получиться
+        $newCascadeValue = [
+            'string' => 'простая и длинная строка',
+            'array'  => [
+                'sub_1' => false,
+                'sub_2' => 'вложенная и длинная строка',
+                'sub_3' => 123,
+            ]
+        ];
+        $this->assertEqual($newCascadeValue, $preparedValue);
+
+        /**
+         * 3. Тест для Таймпада, с двойной сериализацией
+         */
+        $serializedCascade = serialize($cascadeValue); // это происходит в модели
+        $twiceSerializedCascade = serialize($serializedCascade); // это - в Record
+
+        // изменяем строки в дважды сериализованном массиве
+        $corruptedCascade = str_replace('просто строка', 'простая и длинная строка', $twiceSerializedCascade);
+        $corruptedCascade = str_replace('вложенная строка', 'вложенная и длинная строка', $corruptedCascade);
+        $preparedValue = $table->prepareValue('arraytest', $corruptedCascade);
+
+        // на выходе должно получиться
+        $twicePreparedValue = unserialize($preparedValue);
+        $newCascadeValue = [
+            'string' => 'простая и длинная строка',
+            'array'  => [
+                'sub_1' => false,
+                'sub_2' => 'вложенная и длинная строка',
+                'sub_3' => 123,
+            ]
+        ];
+        $this->assertEqual($newCascadeValue, $twicePreparedValue);
+    }
 }
 
 class TestObject
