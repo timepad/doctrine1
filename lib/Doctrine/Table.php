@@ -2351,26 +2351,26 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                     break;
                 case 'array':
                 case 'object':
-                    if (is_string($value)) {
-                        if (empty($value)) {
-                            return null;
-                        }
-
-                        $out = @unserialize($value);
-                        if (false !== $out) {
-                            return $out;
-                        }
-
-                        // попытка починить побитый blob
-                        $fixed = Doctrine_Utils_FixSerializedBlob::fixStringSize($value);
-                        $out = @unserialize($fixed);
-                        if (false !== $out) {
-                            return $out;
-                        }
-
-                        throw new Doctrine_Table_Exception('Unserialization of ' . $fieldName . ' failed.');
+                    if (!is_string($value)) {
+                        break;
                     }
-                    break;
+                    if (empty($value)) {
+                        return null;
+                    }
+
+                    $out = @unserialize($value);
+                    if (false !== $out) {
+                        return $out;
+                    }
+
+                    // попытка починить побитый blob
+                    $fixed = Doctrine_Utils_FixSerializedBlob::fixStringSize($value);
+                    $out = @unserialize($fixed);
+                    if (false !== $out) {
+                        return $out;
+                    }
+
+                    throw new Doctrine_Table_UnserializationException('Unserialization of ' . $fieldName . ' failed.');
                 case 'json':
                     if (is_string($value)) {
                         $value = empty($value) ? null : json_decode($value, true);

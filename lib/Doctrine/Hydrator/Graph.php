@@ -339,11 +339,7 @@ abstract class Doctrine_Hydrator_Graph extends Doctrine_Hydrator_Abstract
                 /** @var Doctrine_Table $table */
                 try {
                     $preparedValue = $table->prepareValue($fieldName, $value, $cache[$key]['type']);
-                } catch (Doctrine_Table_Exception $e) {
-                    if (false === strpos($e->getMessage(), 'Unserialization')) {
-                        throw $e;
-                    }
-
+                } catch (Doctrine_Table_UnserializationException $e) {
                     $event = new UnserializationFieldFailed(
                         $table,
                         $fieldName,
