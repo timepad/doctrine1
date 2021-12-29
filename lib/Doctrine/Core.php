@@ -211,6 +211,8 @@ class Doctrine_Core
     const ATTR_TABLE_CLASS_FORMAT           = 179;
     const ATTR_MAX_IDENTIFIER_LENGTH        = 180;
 
+    const ATTR_EVENT_DISPATCHER = 1000;
+
     /**
      * LIMIT CONSTANTS
      */

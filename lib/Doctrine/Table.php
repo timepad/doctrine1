@@ -2342,24 +2342,35 @@ class Doctrine_Table extends Doctrine_Configurable implements Countable
                 case 'integer':
                 case 'string';
                     // don't do any casting here PHP INT_MAX is smaller than what the databases support
-                break;
+                    break;
                 case 'set':
                     return explode(',', $value);
-                break;
+                    break;
                 case 'boolean':
                     return (boolean) $value;
-                break;
+                    break;
                 case 'array':
                 case 'object':
-                    if (is_string($value)) {
-                        $value = empty($value) ? null:unserialize($value);
-
-                        if ($value === false) {
-                            throw new Doctrine_Table_Exception('Unserialization of ' . $fieldName . ' failed.');
-                        }
-                        return $value;
+                    if (!is_string($value)) {
+                        break;
                     }
-                    break;
+                    if (empty($value)) {
+                        return null;
+                    }
+
+                    $out = @unserialize($value);
+                    if (false !== $out) {
+                        return $out;
+                    }
+
+                    // попытка починить побитый blob
+                    $fixed = Doctrine_Utils_FixSerializedBlob::fixStringSize($value);
+                    $out = @unserialize($fixed);
+                    if (false !== $out) {
+                        return $out;
+                    }
+
+                    throw new Doctrine_Table_UnserializationException('Unserialization of ' . $fieldName . ' failed.');
                 case 'json':
                     if (is_string($value)) {
                         $value = empty($value) ? null : json_decode($value, true);
