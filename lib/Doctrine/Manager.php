@@ -417,7 +417,7 @@ class Doctrine_Manager extends Doctrine_Configurable implements Countable, Itera
             }
         }
 
-        if (count($parts) == 0 || ! isset($parts['scheme'])) {
+        if (!isset($parts['scheme'])) {
             throw new Doctrine_Manager_Exception('Could not parse dsn');
         }
 

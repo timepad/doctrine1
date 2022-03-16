@@ -134,7 +134,7 @@ class Doctrine_Export_Mysql extends Doctrine_Export
                         if (is_string($definition['fields'])) {
                             // Check if index already exists on the column                            
                             $found = $found || ($local == $definition['fields']);                    
-                        } else if (in_array($local, $definition['fields']) && count($definition['fields']) === 1) {
+                        } else if (is_array($definition['fields']) && in_array($local, $definition['fields']) && count($definition['fields']) === 1) {
                             // Index already exists on the column
                             $found = true;
                         }
@@ -524,7 +524,7 @@ class Doctrine_Export_Mysql extends Doctrine_Export
         try {
             $query  = 'CREATE TABLE ' . $sequenceName
                     . ' (' . $seqcolName . ' BIGINT NOT NULL AUTO_INCREMENT, PRIMARY KEY ('
-                    . $seqcolName . ')) ' . implode($optionsStrings, ' ');
+                    . $seqcolName . ')) ' . implode(' ', $optionsStrings);
 
             $res    = $this->conn->exec($query);
         } catch(Doctrine_Connection_Exception $e) {

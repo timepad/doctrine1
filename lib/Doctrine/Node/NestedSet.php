@@ -86,17 +86,15 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         $q = $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $result = $q->execute();
 
-        if (count($result) <= 0) {
-            return false;
+        if (($result instanceof Doctrine_Collection) and count($result) > 0) {
+            return $result->getFirst();
         }
-        
-        if ($result instanceof Doctrine_Collection) {
-            $sibling = $result->getFirst();
-        } else if (is_array($result)) {
-            $sibling = array_shift($result);
+
+        if (is_array($result) and count($result) > 0) {
+            return array_shift($result);
         }
-        
-        return $sibling;
+
+        return false;
     }
 
     /**
@@ -112,17 +110,15 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         $q = $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $result = $q->execute();
 
-        if (count($result) <= 0) {
-            return false;
+        if (($result instanceof Doctrine_Collection) and count($result) > 0) {
+            return $result->getFirst();
+        }
+
+        if (is_array($result) and count($result) > 0) {
+            return array_shift($result);
         }
         
-        if ($result instanceof Doctrine_Collection) {
-            $sibling = $result->getFirst();
-        } else if (is_array($result)) {
-            $sibling = array_shift($result);
-        }
-        
-        return $sibling;
+        return false;
     }
 
     /**
@@ -158,17 +154,15 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $result = $q->execute();
 
-        if (count($result) <= 0) {
-            return false;
+        if (($result instanceof Doctrine_Collection) and count($result) > 0) {
+            return $result->getFirst();
+        }
+
+        if (is_array($result) and count($result) > 0) {
+            return array_shift($result);
         }
         
-        if ($result instanceof Doctrine_Collection) {
-            $child = $result->getFirst();
-        } else if (is_array($result)) {
-            $child = array_shift($result);
-        }
-        
-        return $child;       
+        return false;
     }
 
     /**
@@ -184,17 +178,15 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $result = $q->execute();
 
-        if (count($result) <= 0) {
-            return false;
+        if (($result instanceof Doctrine_Collection) and count($result) > 0) {
+            return $result->getFirst();
+        }
+
+        if (is_array($result) and count($result) > 0) {
+            return array_shift($result);
         }
         
-        if ($result instanceof Doctrine_Collection) {
-            $child = $result->getFirst();
-        } else if (is_array($result)) {
-            $child = array_shift($result);
-        }
-        
-        return $child;      
+        return false;
     }
 
     /**
@@ -231,11 +223,15 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         $q = $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $result = $q->execute();
 
-        if (count($result) <= 0) {
-            return false;
+        if (
+            (($result instanceof Countable) or is_array($result))
+            and
+            count($result) > 0
+        ) {
+            return $result;
         }
 
-        return $result;
+        return false;
     }
 
     /**
@@ -253,17 +249,15 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         $q = $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $result = $q->execute();
         
-        if (count($result) <= 0) {
-            return false;
+        if (($result instanceof Doctrine_Collection) and count($result) > 0) {
+            return $result->getFirst();
         }
-               
-        if ($result instanceof Doctrine_Collection) {
-            $parent = $result->getFirst();
-        } else if (is_array($result)) {
-            $parent = array_shift($result);
+
+        if (is_array($result) and count($result) > 0) {
+            return array_shift($result);
         }
         
-        return $parent;
+        return false;
     }
 
     /**
@@ -284,10 +278,17 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
         }
         $q = $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
         $ancestors = $q->execute();
-        if (count($ancestors) <= 0) {
-            return false;
+
+        if (
+            (($ancestors instanceof Countable) or is_array($ancestors))
+            and
+            count($ancestors) > 0
+        ) {
+
+            return $ancestors;
         }
-        return $ancestors;
+
+        return false;
     }
 
     /**
@@ -321,7 +322,16 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
     public function getNumberChildren()
     {
         $children = $this->getChildren();
-        return $children === false ? 0 : count($children);
+
+        if (
+            ($children instanceof Countable)
+            or
+            is_array($children)
+        ) {
+            return count($children);
+        }
+
+        return 0;
     }
 
     /**
@@ -1187,8 +1197,13 @@ class Doctrine_Node_NestedSet extends Doctrine_Node implements Doctrine_Node_Int
             $q = $this->_tree->returnQueryWithRootId($q, $this->getRootValue());
             
             $coll = $q->execute();
-
-            $this->record['level'] = count($coll) ? count($coll) : 0;
+            $level = 0;
+            if (is_array($coll) or ($coll instanceof Countable)) {
+                $level = count($coll);
+            } elseif (null !== $coll) {
+                $level = 1;
+            }
+            $this->record['level'] = $level;
         }
         return $this->record['level'];
     }

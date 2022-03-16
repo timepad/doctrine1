@@ -216,7 +216,7 @@ class Doctrine_DataDict_Mssql extends Doctrine_DataDict
      * field to be used in statements like CREATE TABLE.
      *
      * @param string  $name   name the field to be declared.
-     * @param string  $field  associative array with the name of the properties
+     * @param array  $field  associative array with the name of the properties
      *                        of the field being declared as array indexes.
      *                        Currently, the types of supported field
      *                        properties are as follows:

@@ -273,7 +273,7 @@ class Doctrine_Import_Schema
         
         $array = $this->buildSchema($schema, $format);
 
-        if (count($array) == 0) { 
+        if (!is_array($array) or count($array) == 0) {
             throw new Doctrine_Import_Exception(
                 sprintf('No ' . $format . ' schema found in ' . implode(", ", $schema))
             ); 
@@ -517,7 +517,17 @@ class Doctrine_Import_Schema
                     $superClass = $definition['inheritance']['extends']; 
                     $multiInheritanceDef = $array[$superClass]; 
 
-                    while (count($multiInheritanceDef['inheritance']) > 0 && array_key_exists('extends', $multiInheritanceDef['inheritance']) && $multiInheritanceDef['inheritance']['type'] == 'column_aggregation') { 
+                    while (
+                        isset($multiInheritanceDef['inheritance'])
+                        &&
+                        is_array($multiInheritanceDef['inheritance'])
+                        &&
+                        count($multiInheritanceDef['inheritance']) > 0
+                        &&
+                        array_key_exists('extends', $multiInheritanceDef['inheritance'])
+                        &&
+                        $multiInheritanceDef['inheritance']['type'] == 'column_aggregation'
+                    ) {
                         $superClass = $multiInheritanceDef['inheritance']['extends'];
                         
                         // keep original keyField with it's keyValue

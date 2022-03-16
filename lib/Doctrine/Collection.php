@@ -539,7 +539,7 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
             }
             $query->where($this->_table->getComponentName() . '.id IN (' . substr(str_repeat("?, ", count($list)),0,-2) . ')');
             if ( ! $list) {
-                $query->where($this->_table->getComponentName() . '.id IN (' . substr(str_repeat("?, ", count($list)),0,-2) . ')', $list);
+                $query->where($this->_table->getComponentName() . '.id IN (' . substr(str_repeat("?, ", 0),0,-2) . ')', $list);
             }
 
             return $query;
@@ -762,7 +762,14 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
                     $stack[] = $trees[$i];
                 } else {
                     // Add child to parent
-                    $i = count($stack[$l - 1]['__children']);
+                    if (!isset($stack[$l - 1]['__children'])) {
+                        $i = 0;
+                    } elseif (is_array($stack[$l - 1]['__children']) or ($stack[$l - 1]['__children'] instanceof Countable)) {
+                        $i = count($stack[$l - 1]['__children']);
+                    } else { // scalar
+                        $i = 1;
+                    }
+
                     $stack[$l - 1]['__children'][$i] = $item;
                     $stack[] = $stack[$l - 1]['__children'][$i];
                 }

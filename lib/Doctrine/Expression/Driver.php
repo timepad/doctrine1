@@ -514,7 +514,7 @@ class Doctrine_Expression_Driver extends Doctrine_Connection_Module
         $values = $this->getIdentifiers($values);
         $column = $this->getIdentifier($column);
 
-        if (count($values) == 0) {
+        if (!$values or !is_array($values)) {
             throw new Doctrine_Expression_Exception('Values array for IN operator should not be empty.');
         }
         return $column . ' IN (' . implode(', ', $values) . ')';
