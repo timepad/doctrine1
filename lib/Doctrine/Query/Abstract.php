@@ -1367,7 +1367,7 @@ abstract class Doctrine_Query_Abstract
     public function andWhereIn($expr, $params = array(), $not = false)
     {
         // if there's no params, return (else we'll get a WHERE IN (), invalid SQL)
-        if (isset($params) and (count($params) == 0)) {
+        if (isset($params) and is_array($params) and (count($params) == 0)) {
             // Semantically this error should have the level of E_USER_NOTICE,
             // however, introducing a new E_USER_NOTICE may lead to a change of behavior.
             // E_USER_DEPRECATED, on the other side, are very likely to be silenced
@@ -1403,7 +1403,7 @@ abstract class Doctrine_Query_Abstract
     public function orWhereIn($expr, $params = array(), $not = false)
     {
         // if there's no params, return (else we'll get a WHERE IN (), invalid SQL)
-        if (isset($params) and (count($params) == 0)) {
+        if (isset($params) and is_array($params) and (count($params) == 0)) {
             return $this;
         }
 
@@ -2043,7 +2043,14 @@ abstract class Doctrine_Query_Abstract
      */
     protected function _hasDqlQueryPart($queryPartName)
     {
-        return count($this->_dqlParts[$queryPartName]) > 0;
+        if (!array_key_exists($queryPartName, $this->_dqlParts)) {
+            return false;
+        }
+        if (is_array($this->_dqlParts[$queryPartName])) {
+           return count($this->_dqlParts[$queryPartName]) > 0;
+        }
+
+        return null !== $this->_dqlParts[$queryPartName];
     }
 
     /**

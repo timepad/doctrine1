@@ -277,7 +277,15 @@ class Doctrine_Data_Import extends Doctrine_Data
                 return true;
             } else {
                 $first = current($data);
-                return array_key_exists('children', $first);
+
+                if (is_array($first)) {
+                    return array_key_exists('children', $first);
+                }
+                if (is_object($first)) {
+                    return property_exists($first, 'children');
+                }
+
+                return false;
             }
         } else {
             return false;
@@ -354,7 +362,7 @@ class Doctrine_Data_Import extends Doctrine_Data
      * Load nested set data for models with nested set enabled
      *
      * @param string $model
-     * @param string $nestedSetData
+     * @param array $nestedSetData
      * @param string $parent
      * @return void
      */

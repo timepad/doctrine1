@@ -110,7 +110,7 @@ class Doctrine_Hydrator_RecordDriver extends Doctrine_Hydrator_Graph
             return;
         }
         
-        if (count($coll) > 0) {
+        if (($coll instanceof Doctrine_Collection) and count($coll) > 0) {
             $prev[$dqlAlias] = $coll->getLast();
         }
     }

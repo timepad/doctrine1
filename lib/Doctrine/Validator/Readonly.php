@@ -37,7 +37,15 @@ class Doctrine_Validator_Readonly extends Doctrine_Validator_Driver
     public function validate($value)
     {
         $modified = $this->invoker->getModified();
-        
-        return array_key_exists($this->field, $modified) ? false : true;
+
+        if (is_array($modified)) {
+            return !array_key_exists($this->field, $modified);
+        }
+
+        if (is_object($modified)) {
+            return !property_exists($modified, $this->field);
+        }
+
+        return true;
     }
 }

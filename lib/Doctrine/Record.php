@@ -2817,6 +2817,9 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
             unset($f[$key]);
         }
         else {
+            if (!is_array($f)) {
+                $f = [];
+            }
             $f[$key] = $value;
         }
 
@@ -2831,7 +2834,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
     public function unsetArrayValue($field, $name) {
         $data = $this->$field;
 
-        if (array_key_exists($name, $data)) {
+        if (is_array($data) and array_key_exists($name, $data)) {
             unset ($data[$name]);
 
             $this->$field = $data;
@@ -2916,7 +2919,7 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
 
     public static function getById($id, $queryRelations = null) {
         $cc = get_called_class();
-        if ($queryRelations !== null && count($queryRelations)) {
+        if ($queryRelations and is_array($queryRelations)) {
             $q = Doctrine_Query::create()
                 ->from("$cc o")
                 ->where('o.id = ?', $id);

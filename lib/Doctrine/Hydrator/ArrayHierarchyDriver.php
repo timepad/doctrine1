@@ -46,7 +46,7 @@ class Doctrine_Hydrator_ArrayHierarchyDriver extends Doctrine_Hydrator_ArrayDriv
         $trees = array();
         $l = 0;
 
-        if (count($collection) > 0) {
+        if (($collection instanceof Doctrine_Collection) and count($collection) > 0) {
             // Node Stack. Used to help building the hierarchy
             $stack = array();
 
@@ -72,7 +72,14 @@ class Doctrine_Hydrator_ArrayHierarchyDriver extends Doctrine_Hydrator_ArrayDriv
                     $stack[] = & $trees[$i];
                 } else {
                     // Add child to parent
-                    $i = count($stack[$l - 1]['__children']);
+                    if (!isset($stack[$l - 1]['__children'])) {
+                        $i = 0;
+                    } elseif (is_array($stack[$l - 1]['__children']) or ($stack[$l - 1]['__children'] instanceof Countable)) {
+                        $i = count($stack[$l - 1]['__children']);
+                    } else { // scalar
+                        $i = 1;
+                    }
+
                     $stack[$l - 1]['__children'][$i] = $item;
                     $stack[] = & $stack[$l - 1]['__children'][$i];
                 }

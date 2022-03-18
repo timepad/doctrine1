@@ -1438,8 +1438,9 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                 foreach ($e as $f) {
                     if ($f == 0 || $f % 2 == 0) {
                         $partOriginal = str_replace(',', '', trim($f));
-                        $callback = create_function('$e', 'return trim($e, \'[]`"\');');
-                        $part = trim(implode('.', array_map($callback, explode('.', $partOriginal))));
+                        $part = trim(implode('.', array_map(function ($e) {
+                            return trim($e, '[]`"');
+                        }, explode('.', $partOriginal))));
 
                         if (strpos($part, '.') === false) {
                             continue;
@@ -1485,7 +1486,7 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
 
         // Add having fields that got stripped out of select
         preg_match_all('/`[a-z0-9_]+`\.`[a-z0-9_]+`/i', implode(' ', $having), $matches, PREG_PATTERN_ORDER);
-        if (count($matches[0]) > 0) {
+        if (!empty($matches[0]) and is_array($matches[0])) {
             $subquery .= ', ' . implode(', ', array_unique($matches[0]));
         }
 
@@ -2112,7 +2113,7 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
                 }
                 // Add having fields that got stripped out of select
                 preg_match_all('/`[a-z0-9_]+`\.`[a-z0-9_]+`/i', $having, $matches, PREG_PATTERN_ORDER);
-                if (count($matches[0]) > 0) {
+                if (!empty($matches[0]) and is_array($matches[0])) {
                     $selectFields .= ', ' . implode(', ', array_unique($matches[0]));
                 }
             }
@@ -2173,7 +2174,7 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
             $results = $this->getConnection()->fetchAll($q, $params);
         }
 
-        if (count($results) > 1) {
+        if (is_array($results) and count($results) > 1) {
             $count = count($results);
         } else {
             if (isset($results[0])) {
@@ -2291,8 +2292,9 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
      * @return $this
      */
     public function dateBetween($date_range, $table, $field = 'created_at') {
-        if (!count($date_range))
+        if (!isset($date_range['begin']) and !isset($date_range['end'])) {
             return $this;
+        }
 
         if (isset($date_range['begin'])) {
             $begin = $date_range['begin']->format('Y-m-d H:i:s');

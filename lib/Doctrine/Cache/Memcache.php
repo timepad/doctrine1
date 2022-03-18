@@ -62,6 +62,9 @@ class Doctrine_Cache_Memcache extends Doctrine_Cache_Driver
         $this->_memcache = new Memcache;
 
         foreach ($this->_options['servers'] as $server) {
+            if (!is_array($server)) {
+                $server = [];
+            }
             if ( ! array_key_exists('persistent', $server)) {
                 $server['persistent'] = true;
             }
