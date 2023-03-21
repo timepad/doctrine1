@@ -157,6 +157,7 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
         unset($vars['expandable']);
         unset($vars['expanded']);
         unset($vars['generator']);
+        unset($vars['_snapshot']);
 
         $vars['_table'] = $vars['_table']->getComponentName();
 
@@ -188,6 +189,10 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
 
         if ($keyColumn !== null) {
             $this->keyColumn = $keyColumn;
+        }
+
+        if (!$this->_snapshot) {
+            $this->takeSnapshot();
         }
     }
 
