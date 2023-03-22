@@ -190,10 +190,6 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
         if ($keyColumn !== null) {
             $this->keyColumn = $keyColumn;
         }
-
-        if (!$this->_snapshot) {
-            $this->takeSnapshot();
-        }
     }
 
     /**
