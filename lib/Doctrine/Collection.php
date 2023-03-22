@@ -145,10 +145,22 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
     /**
      * This method is automatically called when this Doctrine_Collection is serialized
      *
-     * @return array
+     * @return string
      */
     public function serialize()
     {
+        $vars = $this->__serialize();
+
+        return serialize($vars);
+    }
+
+    /**
+     * Serializes the current instance for php 7.4+
+     *
+     * @return array
+     */
+    public function __serialize() {
+
         $vars = get_object_vars($this);
 
         unset($vars['reference']);
@@ -157,13 +169,11 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
         unset($vars['expandable']);
         unset($vars['expanded']);
         unset($vars['generator']);
-        unset($vars['_snapshot']);
 
         $vars['_table'] = $vars['_table']->getComponentName();
 
-        return serialize($vars);
+        return $vars;
     }
-
     /**
      * This method is automatically called everytime a Doctrine_Collection object is unserialized
      *
@@ -171,12 +181,20 @@ class Doctrine_Collection extends Doctrine_Access implements Countable, Iterator
      */
     public function unserialize($serialized)
     {
+        $array = unserialize($serialized);
+
+        $this->__unserialize($array);
+    }
+
+    /**
+     * Unserializes a Doctrine_Collection instance for php 7.4+
+     */
+    public function __unserialize($data)
+    {
         $manager    = Doctrine_Manager::getInstance();
         $connection    = $manager->getCurrentConnection();
 
-        $array = unserialize($serialized);
-
-        foreach ($array as $name => $values) {
+        foreach ($data as $name => $values) {
             $this->$name = $values;
         }
 
