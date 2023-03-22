@@ -810,6 +810,18 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
      */
     public function serialize()
     {
+        $vars = $this->__serialize();
+
+        return serialize($vars);
+    }
+
+    /**
+     * Serializes the current instance for php 7.4+
+     *
+     * @return array
+     */
+    public function __serialize()
+    {
         $event = new Doctrine_Event($this, Doctrine_Event::RECORD_SERIALIZE);
 
         $this->preSerialize($event);
@@ -839,9 +851,10 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
                 switch ($this->_table->getTypeOf($k)) {
                     case 'array':
                     case 'object':
-                    case 'json':
-                    case 'tpstore':
                         $vars['_data'][$k] = serialize($vars['_data'][$k]);
+                        break;
+                    case 'json':
+                        $vars['_data'][$k] = json_encode($vars['_data'][$k]);
                         break;
                     case 'gzip':
                         $vars['_data'][$k] = gzcompress($vars['_data'][$k]);
@@ -853,12 +866,10 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
             }
         }
 
-        $str = serialize($vars);
-
         $this->postSerialize($event);
         $this->getTable()->getRecordListener()->postSerialize($event);
 
-        return $str;
+        return $vars;
     }
 
     /**
@@ -870,19 +881,29 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
      */
     public function unserialize($serialized)
     {
+        $array = unserialize($serialized);
+
+        $this->__unserialize($array);
+    }
+
+    /**
+     * Unserializes a Doctrine_Record instance for php 7.4+
+     *
+     * @param array $serialized
+     */
+    public function __unserialize($data)
+    {
         $event = new Doctrine_Event($this, Doctrine_Event::RECORD_UNSERIALIZE);
-        
+
         $manager    = Doctrine_Manager::getInstance();
         $connection = $manager->getConnectionForComponent(get_class($this));
 
         $this->_table = $connection->getTable(get_class($this));
-        
+
         $this->preUnserialize($event);
         $this->getTable()->getRecordListener()->preUnserialize($event);
 
-        $array = unserialize($serialized);
-
-        foreach($array as $k => $v) {
+        foreach($data as $k => $v) {
             $this->$k = $v;
         }
 
@@ -890,9 +911,11 @@ abstract class Doctrine_Record extends Doctrine_Record_Abstract implements Count
             switch ($this->_table->getTypeOf($k)) {
                 case 'array':
                 case 'object':
-                case 'json':
                 case 'tpstore':
                     $this->_data[$k] = unserialize($this->_data[$k]);
+                    break;
+                case 'json':
+                    $this->_data[$k] = json_decode($this->_data[$k]);
                     break;
                 case 'gzip':
                     $this->_data[$k] = gzuncompress($this->_data[$k]);
