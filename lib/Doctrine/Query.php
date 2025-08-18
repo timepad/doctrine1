@@ -280,7 +280,7 @@ class Doctrine_Query extends Doctrine_Query_Abstract implements Countable
     {
         $collection = $this->execute($params, $hydrationMode);
 
-        if (is_scalar($collection)) {
+        if (is_scalar($collection) || $collection === null) {
             return $collection;
         }
 
